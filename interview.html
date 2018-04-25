@@ -1,0 +1,88 @@
+<!--
+学习廖雪峰官方网站：https://www.liaoxuefeng.com/article/00151045553343934ba3bb4ed684623b1bf00488231d88d000
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title>懒加载图片</title>
+    <script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0
+        }
+
+        .wrapper {
+            font-size: 0;
+        }
+
+        .wrapper li {
+            display: inline-block;
+            list-style: none;
+            width: 50%;
+            border: 1px solid #ccc;
+            box-sizing: border-box;
+        }
+
+        .wrapper li img {
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+<div class="wrapper">
+    <ul>
+    </ul>
+</div>
+</body>
+<script>
+        $(function () {
+            //加载图片框架
+            const LENGTH = 100;
+            let liStr = '';
+            for (let i = 0; i < LENGTH; i++) {
+                liStr += `<li><img data-src='1.jfif'  src="loading.jpg"></li>`;
+            }
+            $('.wrapper ul').append(liStr);
+            $('.wrapper ul>li').height($('.wrapper ul li').width());
+            //懒加载
+            //1.获取需懒加载图片对象
+            let $window = $(window);
+            let lazyImgArr = Array.from($('img[data-src]'));
+            let lazyImgs = lazyImgArr.map(function (value, index) {
+                return $(lazyImgArr[index]);
+            });
+            //2.自定义事件
+            let onScroll = function () {
+                //获取页面滚动的高度
+                let wTop = $window.scrollTop();
+                //存放待删除的图片索引
+                let loadedIndex = [];
+                //可视窗口高度
+                let wHeight = $window.height();
+                if (lazyImgs.length) {
+                    $.each(lazyImgs, function (index, el) {
+                        //判断是否在可视范围内
+                        if (el.offset().top - wTop < wHeight) {
+                            //替换src属性
+                            el.attr('src', el.attr('data-src'));
+                            loadedIndex.unshift(index);
+                        }
+                    });
+                    //删除已显示的对象
+                    $.each(loadedIndex,function (index,val) {
+                      lazyImgs.splice(val,1);
+                    });
+                }
+            };
+            $window.off('scroll').on('scroll').scroll(function () {
+                onScroll();
+            });
+            //初始化 手动触发一次
+            onScroll();
+
+        });
+</script>
+</html>
